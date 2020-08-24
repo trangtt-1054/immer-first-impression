@@ -1,12 +1,22 @@
 import React, { useState, useReducer } from 'react';
+import produce from 'immer';
 import { login } from './utils';
 
 const loginReducer = (state, action) => {
   switch (action.type) {
+    //reducer phải trả về 1 copy object vì nếu là same instance object thì react component sẽ ko update, sẽ error-prone nếu object bị nest nhiều
     case 'field':
-      return { ...state, [action.field]: action.value };
+      //pass in produce the object that you want to mutate and the (draft) object is the copy of input object
+      return produce(state, (draft) => {
+        draft[action.field] = action.value;
+      });
+
+    //action-on-write: when you assign new properties and manipulate data on draft obj, immer will track all those mutation. When the fn returns, we will immutably assign them to the input object
     case 'login':
-      return { ...state, isLoading: true, error: '' };
+      return produce(state, (draft) => {
+        draft.error = '';
+        draft.isLoading = true;
+      });
     case 'success':
       return { ...state, isLoggedIn: true };
     case 'error':
